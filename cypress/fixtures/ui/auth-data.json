@@ -1,0 +1,59 @@
+{
+  "validCredentials": {
+    "email": "admin@example.com",
+    "password": "Admin@123"
+  },
+  "invalidCredentials": {
+    "email": "invalid@example.com",
+    "password": "wrongpassword"
+  },
+  "testUsers": [
+    {
+      "id": 1,
+      "email": "john.doe@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "admin",
+      "password": "John@123",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "email": "jane.smith@example.com",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "role": "user",
+      "password": "Jane@123",
+      "isActive": true,
+      "createdAt": "2024-01-02T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "email": "bob.johnson@example.com",
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "role": "moderator",
+      "password": "Bob@123",
+      "isActive": false,
+      "createdAt": "2024-01-03T00:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "id": 1,
+      "name": "admin",
+      "permissions": ["read", "write", "delete", "manage_users"]
+    },
+    {
+      "id": 2,
+      "name": "moderator",
+      "permissions": ["read", "write"]
+    },
+    {
+      "id": 3,
+      "name": "user",
+      "permissions": ["read"]
+    }
+  ]
+}

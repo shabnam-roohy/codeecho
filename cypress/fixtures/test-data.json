@@ -1,0 +1,16 @@
+{
+  "validUser": {
+    "email": "user@example.com",
+    "password": "password123"
+  },
+  "adminUser": {
+    "email": "admin@example.com",
+    "password": "admin123"
+  },
+  "testData": {
+    "companyName": "Test Company",
+    "address": "123 Test Street",
+    "city": "Test City",
+    "zipCode": "12345"
+  }
+}
