@@ -1,58 +1,117 @@
 // ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
+// Custom commands for Cypress
 // ***********************************************
 
 /// <reference types="cypress" />
+
+// Import project commands
+import './commands/projects-commands';
 
 declare global {
   namespace Cypress {
     interface Chainable {
       /**
-       * Custom command to login with username and password
+       * Custom command to login with email and password
        * @example cy.login('user@example.com', 'password123')
        */
       login(email: string, password: string): Chainable<void>
       
       /**
-       * Custom command to get element by data-testid attribute
-       * @example cy.getByTestId('submit-button')
+       * Custom command to login using API
+       * @example cy.apiLogin('user@example.com', 'password123')
        */
-      getByTestId(testId: string): Chainable<JQuery<HTMLElement>>
+      apiLogin(email: string, password: string): Chainable<void>
+      apiLoginviaui(email: string, password: string): Chainable<void>
+      /**
+       * Generate random email
+       * @example cy.generateRandomEmail()
+       */
+
       
       /**
-       * Custom command to wait for API response
-       * @example cy.waitForApi('getUsers')
+       * Generate random password
+       * @example cy.generateRandomPassword()
        */
-      waitForApi(alias: string): Chainable<void>
+     
+      
+      /**
+       * Add project command
+       * @example cy.Addproject('project-name')
+       */
+      Repo(projectName: string): Chainable<void>
+      Addproject(): Chainable<null>
+        TotalCommitsnotchanged(): Chainable<null>
     }
   }
 }
 
-// Custom command to login
+// Custom login command
 Cypress.Commands.add('login', (email: string, password: string) => {
-  cy.session([email, password], () => {
+    cy.get('#email').type(email);
+    cy.get('#password').type(password);
+    cy.get('button[type="submit"]').click();
+});
+
+Cypress.Commands.add('apiLogin', (email: string, password: string) => {
+    // Get API URL from environment variable
+    const apiUrl = Cypress.env('API_URL') || 'http://localhost:8080/api';
+    
+    // Make API request using environment variable
+    cy.request({
+        method: 'POST',
+        url: `${apiUrl}/v1/auth/login`,
+        body: {
+            email: email,
+            password: password
+        },
+        
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body).to.have.property('token');
+        expect(response.body).to.have.property('user');
+        expect(response.body.user.email).to.eq(email);
+        cy.log(`Login successful using API: ${apiUrl}/v1/auth/login`);
+    });
+});
+
+Cypress.Commands.add('apiLoginviaui', (email: string, password: string) => {
+    // Get API URL from environment variable
+    const apiUrl = Cypress.env('API_URL') || 'http://localhost:8080/api';
+
+    // Set up intercept to capture the login API request
+    cy.intercept('POST', `**/v1/auth/login`, {
+        statusCode: 200,
+        body: {
+            token: 'mock-jwt-token-ui-12345',
+            user: {
+                email: email,
+                id: 1,
+                name: 'Test User'
+            },
+            message: 'Login successful via UI'
+        }
+    }).as('loginRequest');
+
+    // Visit login page and perform UI login
     cy.visit('/login');
-    cy.get('[data-testid="email-input"]').type(email);
-    cy.get('[data-testid="password-input"]').type(password);
-    cy.get('[data-testid="login-button"]').click();
-    cy.url().should('not.include', '/login');
-  });
+    cy.get('#email').type(email);
+    cy.get('#password').type(password);
+    cy.get('button[type="submit"]').click();
 });
 
-// Custom command to get element by data-testid
-Cypress.Commands.add('getByTestId', (testId: string) => {
-  return cy.get(`[data-testid="${testId}"]`);
-});
 
-// Custom command to wait for API response
-Cypress.Commands.add('waitForApi', (alias: string) => {
-  cy.wait(`@${alias}`);
+
+
+
+Cypress.Commands.add('Repo', (repositoryName: string) => {
+  
+    cy.get('div.grid button').each(($el, index, $list) => {
+        const text = $el.text().trim();
+        cy.log(`Button ${index + 1}: ${text}`);
+        if (text === repositoryName[0]) {
+            cy.wrap($el).click();
+        }
+    });
 });
 
 // Export to prevent TS errors
