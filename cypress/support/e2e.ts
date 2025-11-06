@@ -13,8 +13,10 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.ts using ES2015 syntax:
-import './commands'
+// Import commands using ES2015 syntax:
+import './commands/auth-commands'
+import './commands/projects-commands'
+import './commands/git-commands'
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
