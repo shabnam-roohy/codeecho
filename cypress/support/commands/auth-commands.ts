@@ -4,9 +4,6 @@
 
 /// <reference types="cypress" />
 
-// Import project commands
-import './commands/projects-commands';
-
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -22,25 +19,6 @@ declare global {
        */
       apiLogin(email: string, password: string): Chainable<void>
       apiLoginviaui(email: string, password: string): Chainable<void>
-      /**
-       * Generate random email
-       * @example cy.generateRandomEmail()
-       */
-
-      
-      /**
-       * Generate random password
-       * @example cy.generateRandomPassword()
-       */
-     
-      
-      /**
-       * Add project command
-       * @example cy.Addproject('project-name')
-       */
-      Repo(projectName: string): Chainable<void>
-      Addproject(): Chainable<null>
-        TotalCommitsnotchanged(): Chainable<null>
     }
   }
 }
@@ -54,37 +32,32 @@ Cypress.Commands.add('login', (email: string, password: string) => {
 
 Cypress.Commands.add('apiLogin', (email: string, password: string) => {
     // Get API URL from environment variable
-    const apiUrl = Cypress.env('API_URL') || 'https://codeecho.io/api';
+    const apiUrl = Cypress.env('API_URL') || 'http://localhost:8080/api';
     
     // Make API request using environment variable
     cy.request({
         method: 'POST',
-        url: `${apiUrl}/auth/login`,
+        url: `${apiUrl}/v1/auth/login`,
         body: {
             email: email,
             password: password
         },
-        failOnStatusCode: false
+        
     }).then((response) => {
-        if (response.status === 200) {
-            expect(response.body).to.have.property('token');
-            expect(response.body).to.have.property('user');
-            expect(response.body.user.email).to.eq(email);
-            cy.log(`✅ Login successful using API: ${apiUrl}/auth/login`);
-        } else {
-            cy.log(`⚠️ API endpoint not available: ${apiUrl}/auth/login`);
-            cy.log(`Response status: ${response.status}`);
-            cy.log(`Response body: ${JSON.stringify(response.body)}`);
-        }
+        expect(response.status).to.eq(200);
+        expect(response.body).to.have.property('token');
+        expect(response.body).to.have.property('user');
+        expect(response.body.user.email).to.eq(email);
+        cy.log(`Login successful using API: ${apiUrl}/v1/auth/login`);
     });
 });
 
 Cypress.Commands.add('apiLoginviaui', (email: string, password: string) => {
     // Get API URL from environment variable
-    const apiUrl = Cypress.env('API_URL') || 'https://codeecho.io/api';
+    const apiUrl = Cypress.env('API_URL') || 'http://localhost:8080/api';
 
     // Set up intercept to capture the login API request
-    cy.intercept('POST', `**/auth/login`, {
+    cy.intercept('POST', `**/v1/auth/login`, {
         statusCode: 200,
         body: {
             token: 'mock-jwt-token-ui-12345',
@@ -102,21 +75,6 @@ Cypress.Commands.add('apiLoginviaui', (email: string, password: string) => {
     cy.get('#email').type(email);
     cy.get('#password').type(password);
     cy.get('button[type="submit"]').click();
-});
-
-
-
-
-
-Cypress.Commands.add('Repo', (repositoryName: string) => {
-  
-    cy.get('div.grid button').each(($el, index, $list) => {
-        const text = $el.text().trim();
-        cy.log(`Button ${index + 1}: ${text}`);
-        if (text === repositoryName[0]) {
-            cy.wrap($el).click();
-        }
-    });
 });
 
 // Export to prevent TS errors
