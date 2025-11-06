@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  cypress-run:
+  install-dependencies:
+    name: Install Dependencies
     runs-on: ubuntu-24.04
     
     steps:
@@ -27,7 +28,48 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Cypress run
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      
+      - name: Verify Cypress
+        run: npx cypress verify
+  
+  e2e-tests:
+    name: Run E2E Tests
+    runs-on: ubuntu-24.04
+    needs: install-dependencies
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Restore cached dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      
+      - name: Install dependencies (if cache miss)
+        run: npm ci --prefer-offline
+      
+      - name: Run Cypress Tests
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
@@ -48,6 +90,7 @@ jobs:
         with:
           name: cypress-screenshots
           path: cypress/screenshots
+          retention-days: 7
           
       - name: Upload videos
         uses: actions/upload-artifact@v4
@@ -55,3 +98,4 @@ jobs:
         with:
           name: cypress-videos
           path: cypress/videos
+          retention-days: 7
