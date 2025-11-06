@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   cypress-run:
@@ -30,10 +31,15 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
-          headless: true
+          headed: false
+          config-file: cypress.config.ts
+          spec: cypress/e2e/ui/Auth/login.cy.ts
         env:
-          CYPRESS_BASE_URL: ${{ secrets.CYPRESS_BASE_URL || 'https://codeecho.io' }}
-          REPO_URL: ${{ secrets.REPO_URL || 'https://github.com/shabnam-roohy/codeecho.git' }}
+          CYPRESS_baseUrl: https://codeecho.io
+          CYPRESS_API_URL: https://api.codeecho.io
+          CYPRESS_TEST_EMAIL: ${{ secrets.CYPRESS_TEST_EMAIL }}
+          CYPRESS_TEST_PASSWORD: ${{ secrets.CYPRESS_TEST_PASSWORD }}
+          REPO_URL: https://github.com/shabnam-roohy/test-1.git
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Upload screenshots on failure

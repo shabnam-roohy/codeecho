@@ -1,12 +1,40 @@
 {
   "validUser": {
-    "email": "user@example.com",
-    "password": "password123"
+    "email": "test@codeecho.com",
+    "password": "admin123"
   },
   "adminUser": {
     "email": "admin@example.com",
     "password": "admin123"
   },
+  "invalidUsers": [
+    {
+      "email": "invalid@example.com",
+      "password": "wrongpassword",
+      "expectedError": "Invalid credentials"
+    },
+    {
+      "email": "notfound@example.com", 
+      "password": "anypassword",
+      "expectedError": "User not found"
+    }
+  ],
+  "testUsers": [
+    {
+      "email": "john.doe@example.com",
+      "password": "John@123",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "user"
+    },
+    {
+      "email": "jane.smith@example.com",
+      "password": "Jane@456",
+      "firstName": "Jane", 
+      "lastName": "Smith",
+      "role": "admin"
+    }
+  ],
   "testData": {
     "companyName": "Test Company",
     "address": "123 Test Street",
