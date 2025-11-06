@@ -41,8 +41,8 @@ jobs:
       - name: Verify Cypress
         run: npx cypress verify
   
-  e2e-tests:
-    name: Run E2E Tests
+  api-tests:
+    name: Run API Tests
     runs-on: ubuntu-24.04
     needs: install-dependencies
     
@@ -69,33 +69,90 @@ jobs:
       - name: Install dependencies (if cache miss)
         run: npm ci --prefer-offline
       
-      - name: Run Cypress Tests
+      - name: Run API Tests
         uses: cypress-io/github-action@v6
         with:
           browser: chrome
           headed: false
           config-file: cypress.config.ts
-          spec: cypress/e2e/ui/Auth/login.cy.ts
+          spec: cypress/e2e/api/**/*.cy.ts
         env:
           CYPRESS_baseUrl: https://codeecho.io
-          CYPRESS_API_URL: https://api.codeecho.io
+          CYPRESS_API_URL: https://codeecho.io/api
+          CYPRESS_TEST_EMAIL: ${{ secrets.CYPRESS_TEST_EMAIL }}
+          CYPRESS_TEST_PASSWORD: ${{ secrets.CYPRESS_TEST_PASSWORD }}
+      
+      - name: Upload API test screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: api-test-screenshots
+          path: cypress/screenshots
+          retention-days: 7
+          
+      - name: Upload API test videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-test-videos
+          path: cypress/videos
+          retention-days: 7
+  
+  ui-tests:
+    name: Run UI Tests
+    runs-on: ubuntu-24.04
+    needs: install-dependencies
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Restore cached dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            ~/.cache/Cypress
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      
+      - name: Install dependencies (if cache miss)
+        run: npm ci --prefer-offline
+      
+      - name: Run UI Tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          headed: false
+          config-file: cypress.config.ts
+          spec: cypress/e2e/ui/**/*.cy.ts
+        env:
+          CYPRESS_baseUrl: https://codeecho.io
+          CYPRESS_API_URL: https://codeecho.io/api
           CYPRESS_TEST_EMAIL: ${{ secrets.CYPRESS_TEST_EMAIL }}
           CYPRESS_TEST_PASSWORD: ${{ secrets.CYPRESS_TEST_PASSWORD }}
           REPO_URL: https://github.com/shabnam-roohy/test-1.git
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Upload screenshots on failure
+      - name: Upload UI test screenshots on failure
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-screenshots
+          name: ui-test-screenshots
           path: cypress/screenshots
           retention-days: 7
           
-      - name: Upload videos
+      - name: Upload UI test videos
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cypress-videos
+          name: ui-test-videos
           path: cypress/videos
           retention-days: 7
